@@ -35,22 +35,33 @@ class ODE:
             self.dI * (I1 + I2) + self.dH * H
         ], dtype=np.float64)
 
-popu = 10000000
-q_day = 104
-days = 400
 
-model_prev = ODE(omega=0)
-model_q = ODE(omega=1)
+def draw(popu, start, interval):
+    model_prev = ODE(omega=0)
+    color = ['red', 'green', 'gold', 'blue', 'pink', 'indigo', 'black']
+    for i, day in enumerate(start):
+        model_q = ODE(omega=1)
+        t_prev = np.linspace(0, day, day)
 
-t_prev = np.linspace(0, q_day, q_day)
-result_prev = odeint(model_prev.equation, [popu, 0, 1, 0, 0, 0, 0, 0, 0, 0], t_prev)
-plt.plot(t_prev, (popu * np.ones(q_day)) - result_prev[:, 0] - result_prev[:, 1], label='Infected')
 
-t_q = np.linspace(q_day, days, days-q_day)
-result_q = odeint(model_q.equation, [result_prev[-1, i] for i in range(0, 10)], t_q)
-plt.plot(t_q, popu * np.ones(days-q_day) - result_q[:, 0] - result_q[:, 1], label='After Q')
+        result_prev = odeint(model_prev.equation, [popu, 0, 1, 0, 0, 0, 0, 0, 0, 0], t_prev)
+        plt.plot(t_prev, (popu * np.ones(day)) - result_prev[:, 0] - result_prev[:, 1], label='t1={}'.format(day), color=color[i])
 
-plt.legend()
-plt.grid()
-plt.show()
+        t_q = np.linspace(day, interval, interval - day)
+        result_q = odeint(model_q.equation, [result_prev[-1, i] for i in range(0, 10)], t_q)
+        plt.plot(t_q, popu * np.ones(interval - day) - result_q[:, 0] - result_q[:, 1], color=color[i])
+    t_no_q = np.linspace(0, interval, interval)
+    result_no_q = odeint(model_prev.equation, [popu, 0, 1, 0, 0, 0, 0, 0, 0, 0], t_no_q)
+    plt.plot(t_no_q, (popu * np.ones(interval)) - result_no_q[:, 0] - result_no_q[:, 1], label='No quarantine', color=color[-1])
 
+
+    plt.legend()
+    # plt.grid()
+    plt.show()
+
+if __name__ == '__main__':
+    popu = 10000000
+    start = [15, 35, 55, 75, 85, 95]
+    interval = 400
+
+    draw(popu, start, interval)
